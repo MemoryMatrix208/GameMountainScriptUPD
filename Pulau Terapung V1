@@ -1,0 +1,485 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/WhoGodsyoure/Home/refs/heads/main/Neko.lua"))()
+local ThemeManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/WhoGodsyoure/Home/refs/heads/main/ThemeManager.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/WhoGodsyoure/Home/refs/heads/main/SaveManager.lua"))()
+
+local Window = Library:CreateWindow({
+    Title = "ArchiveXNova",
+    Footer = "Pulau Terapung | YouTube: ArchiveXNova",
+    Icon = 85025739024001,
+    NotifySide = "Right",
+    ShowCustomCursor = true,
+    Center = true,
+    AutoShow = true,
+})
+
+local Tabs = {
+    Main = Window:AddTab("Main"),
+    ["UI Settings"] = Window:AddTab("Settings")
+}
+
+local Group = Tabs.Main:AddLeftGroupbox("Mounts No Loop V1")
+
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local function getHRP()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart")
+end
+
+local Points = {
+Vector3.new(1175.339, 1014.524, -476.915),
+Vector3.new(2201.934, 1014.521, -2192.924),
+Vector3.new(2268.911, 1014.524, -3463.147),
+Vector3.new(3667.538, 1278.511, -4386.860),
+Vector3.new(4994.892, 1522.521, -3809.251),
+Vector3.new(6437.738, 1522.519, -3759.829),
+Vector3.new(7302.743, 1742.524, -2731.254),
+Vector3.new(8476.283, 1454.524, -1155.312),
+Vector3.new(9813.076, 1454.519, 48.724),
+Vector3.new(11216.029, 1454.521, -154.365),
+Vector3.new(12074.063, 1454.524, 831.259),
+Vector3.new(13874.000, 1826.641, 830.135),
+Vector3.new(15648.890, 1826.524, 569.232),
+Vector3.new(16240.208, 2002.513, -524.822),
+Vector3.new(15738.077, 2382.510, -1933.422),
+Vector3.new(15672.692, 2382.523, -3354.828),
+Vector3.new(14522.847, 2698.524, -4373.422),
+Vector3.new(13015.062, 3042.523, -5185.042),
+Vector3.new(12146.448, 3042.524, -6689.061),
+Vector3.new(12267.261, 3418.524, -7940.854),
+Vector3.new(13573.879, 3418.307, -9110.958),
+Vector3.new(14835.262, 3782.513, -9050.694),
+Vector3.new(15952.945, 3782.850, -7930.223),
+Vector3.new(16500.717, 4045.016, -6795.568),
+Vector3.new(17376.141, 4050.130, -5816.899),
+Vector3.new(17459.732, 4046.187, -4158.882),
+Vector3.new(18968.680, 4046.047, -2764.302),
+Vector3.new(21747.691, 3931.011, -2199.584),
+Vector3.new(22007.510, 5840.720, -1979.347),
+Vector3.new(22039.039, 6806.720, -1887.016),
+Vector3.new(22158.031, 7758.220, -1894.817),
+Vector3.new(22299.107, 8724.200, -1897.065),
+Vector3.new(22435.518, 9684.215, -1901.455),
+Vector3.new(22666.414, 10650.707, -1911.809),
+Vector3.new(22686.938, 10650.707, -1829.328),
+}
+
+local Running = false
+local Looping = false
+local SelectedMode = "Tween"
+local SelectedValue = "50%"
+
+local SpeedValues = {
+    "0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"
+}
+
+for i = 1, 100 do
+    SpeedValues[#SpeedValues + 1] = i .. "%"
+end
+
+local function slowValueToDelay(v)
+    return math.clamp(10 - (v * 8), 2, 10)
+end
+
+local function percentToDelay(p)
+    return math.clamp(6 - (p / 100 * 5), 0.05, 6)
+end
+
+Group:AddDropdown("SpeedDropdown", {
+    Values = SpeedValues,
+    Default = 10,
+    Multi = false,
+    Text = "Speed",
+    Callback = function(Value)
+        SelectedValue = Value
+    end
+})
+
+Group:AddDropdown("ModeDropdown", {
+    Values = {"Tween","Teleport"},
+    Default = 1,
+    Multi = false,
+    Text = "Mode",
+    Callback = function(Value)
+        SelectedMode = Value
+    end
+})
+
+Group:AddDropdown("ControlDropdown", {
+    Values = {"Once","Loop","Stop"},
+    Default = 1,
+    Multi = false,
+    Text = "Control",
+    Callback = function(Value)
+        if Value == "Stop" then
+            Running = false
+            Looping = false
+            return
+        end
+
+        if Running then return end
+        Running = true
+        Looping = (Value == "Loop")
+
+        task.spawn(function()
+            local hrp = getHRP()
+
+            repeat
+                for _, pos in ipairs(Points) do
+                    if not Running then break end
+
+                    local delayTime
+                    if SelectedValue:find("%%") then
+                        delayTime = percentToDelay(tonumber(SelectedValue:gsub("%%","")))
+                    else
+                        delayTime = slowValueToDelay(tonumber(SelectedValue))
+                    end
+
+                    if SelectedMode == "Tween" then
+                        local tween = TweenService:Create(
+                            hrp,
+                            TweenInfo.new(delayTime, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut),
+                            {CFrame = CFrame.new(pos)}
+                        )
+                        tween:Play()
+                        tween.Completed:Wait()
+                    else
+                        hrp.CFrame = CFrame.new(pos)
+                        task.wait(delayTime)
+                    end
+                end
+            until not Looping or not Running
+
+            Running = false
+        end)
+    end
+})
+
+local Group = Tabs.Main:AddLeftGroupbox("Mounts No Loop V2")
+
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local function getHRP()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart")
+end
+
+local Points = {
+Vector3.new(1175.339, 1014.524, -476.915),
+Vector3.new(2201.934, 1014.521, -2192.924),
+Vector3.new(2268.911, 1014.524, -3463.147),
+Vector3.new(3667.538, 1278.511, -4386.860),
+Vector3.new(4994.892, 1522.521, -3809.251),
+Vector3.new(6437.738, 1522.519, -3759.829),
+Vector3.new(7302.743, 1742.524, -2731.254),
+Vector3.new(8476.283, 1454.524, -1155.312),
+Vector3.new(9813.076, 1454.519, 48.724),
+Vector3.new(11216.029, 1454.521, -154.365),
+Vector3.new(12074.063, 1454.524, 831.259),
+Vector3.new(13874.000, 1826.641, 830.135),
+Vector3.new(15648.890, 1826.524, 569.232),
+Vector3.new(16240.208, 2002.513, -524.822),
+Vector3.new(15738.077, 2382.510, -1933.422),
+Vector3.new(15672.692, 2382.523, -3354.828),
+Vector3.new(14522.847, 2698.524, -4373.422),
+Vector3.new(13015.062, 3042.523, -5185.042),
+Vector3.new(12146.448, 3042.524, -6689.061),
+Vector3.new(12267.261, 3418.524, -7940.854),
+Vector3.new(13573.879, 3418.307, -9110.958),
+Vector3.new(14835.262, 3782.513, -9050.694),
+Vector3.new(15952.945, 3782.850, -7930.223),
+Vector3.new(16500.717, 4045.016, -6795.568),
+Vector3.new(17376.141, 4050.130, -5816.899),
+Vector3.new(17459.732, 4046.187, -4158.882),
+Vector3.new(18968.680, 4046.047, -2764.302),
+Vector3.new(21747.691, 3931.011, -2199.584),
+Vector3.new(22007.510, 5840.720, -1979.347),
+Vector3.new(22039.039, 6806.720, -1887.016),
+Vector3.new(22158.031, 7758.220, -1894.817),
+Vector3.new(22299.107, 8724.200, -1897.065),
+Vector3.new(22435.518, 9684.215, -1901.455),
+Vector3.new(22666.414, 10650.707, -1911.809),
+Vector3.new(22686.938, 10650.707, -1829.328),
+}
+
+local Running = false
+local Looping = false
+local SelectedMode = "Tween"
+local SelectedSpeed = "Normal"
+
+local SpeedMap = {
+    ["Ultra Slow"]     = 8,
+    ["Glacial"]        = 7,
+    ["Snail Pace"]     = 6,
+    ["Very Slow"]      = 5,
+    ["Slow"]           = 4,
+
+    ["Normal"]         = 3,
+
+    ["Moderate"]       = 2.5,
+    ["Steady"]         = 2.2,
+    ["Brisk"]          = 2.0,
+    ["Fast"]           = 1.7,
+    ["Quick"]          = 1.4,
+    ["Very Fast"]      = 1.1,
+    ["Super Fast"]     = 0.9,
+    ["Ultra Fast"]     = 0.7,
+    ["Hyper Speed"]    = 0.5,
+    ["Lightning Fast"] = 0.25,
+    ["Warp Speed"]     = 0.1,
+    ["Instant"]        = 0
+}
+
+local SpeedValues = {
+    "Ultra Slow",
+    "Glacial",
+    "Snail Pace",
+    "Very Slow",
+    "Slow",
+    "Normal",
+    "Moderate",
+    "Steady",
+    "Brisk",
+    "Fast",
+    "Quick",
+    "Very Fast",
+    "Super Fast",
+    "Ultra Fast",
+    "Hyper Speed",
+    "Lightning Fast",
+    "Warp Speed",
+    "Instant"
+}
+
+Group:AddDropdown("SpeedDropdown", {
+    Values = SpeedValues,
+    Default = 6,
+    Multi = false,
+    Text = "Speed",
+    Callback = function(Value)
+        SelectedSpeed = Value
+    end
+})
+
+Group:AddDropdown("ModeDropdown", {
+    Values = {"Tween","Teleport"},
+    Default = 1,
+    Multi = false,
+    Text = "Mode",
+    Callback = function(Value)
+        SelectedMode = Value
+    end
+})
+
+Group:AddDropdown("ControlDropdown", {
+    Values = {"Once","Loop","Stop"},
+    Default = 1,
+    Multi = false,
+    Text = "Control",
+    Callback = function(Value)
+        if Value == "Stop" then
+            Running = false
+            Looping = false
+            return
+        end
+
+        if Running then return end
+        Running = true
+        Looping = (Value == "Loop")
+
+        task.spawn(function()
+            local hrp = getHRP()
+
+            repeat
+                for _, pos in ipairs(Points) do
+                    if not Running then break end
+
+                    local delayTime = SpeedMap[SelectedSpeed] or 3
+
+                    if SelectedMode == "Tween" then
+                        local tween = TweenService:Create(
+                            hrp,
+                            TweenInfo.new(
+                                delayTime,
+                                Enum.EasingStyle.Sine,
+                                Enum.EasingDirection.InOut
+                            ),
+                            {CFrame = CFrame.new(pos)}
+                        )
+                        tween:Play()
+                        tween.Completed:Wait()
+                    else
+                        hrp.CFrame = CFrame.new(pos)
+                        if delayTime > 0 then
+                            task.wait(delayTime)
+                        else
+                            task.wait()
+                        end
+                    end
+                end
+            until not Looping or not Running
+
+            Running = false
+        end)
+    end
+})
+
+local Group = Tabs.Main:AddLeftGroupbox("Mounts With Loop V1")
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
+local AutoLoop = false
+local CurrentMode = nil
+local CurrentDelay = 5
+local SelectedMode = "RESET"
+
+local SpawnRoutes = {
+    RESET = {
+Vector3.new(1175.339, 1014.524, -476.915),
+Vector3.new(2201.934, 1014.521, -2192.924),
+Vector3.new(2268.911, 1014.524, -3463.147),
+Vector3.new(3667.538, 1278.511, -4386.860),
+Vector3.new(4994.892, 1522.521, -3809.251),
+Vector3.new(6437.738, 1522.519, -3759.829),
+Vector3.new(7302.743, 1742.524, -2731.254),
+Vector3.new(8476.283, 1454.524, -1155.312),
+Vector3.new(9813.076, 1454.519, 48.724),
+Vector3.new(11216.029, 1454.521, -154.365),
+Vector3.new(12074.063, 1454.524, 831.259),
+Vector3.new(13874.000, 1826.641, 830.135),
+Vector3.new(15648.890, 1826.524, 569.232),
+Vector3.new(16240.208, 2002.513, -524.822),
+Vector3.new(15738.077, 2382.510, -1933.422),
+Vector3.new(15672.692, 2382.523, -3354.828),
+Vector3.new(14522.847, 2698.524, -4373.422),
+Vector3.new(13015.062, 3042.523, -5185.042),
+Vector3.new(12146.448, 3042.524, -6689.061),
+Vector3.new(12267.261, 3418.524, -7940.854),
+Vector3.new(13573.879, 3418.307, -9110.958),
+Vector3.new(14835.262, 3782.513, -9050.694),
+Vector3.new(15952.945, 3782.850, -7930.223),
+Vector3.new(16500.717, 4045.016, -6795.568),
+Vector3.new(17376.141, 4050.130, -5816.899),
+Vector3.new(17459.732, 4046.187, -4158.882),
+Vector3.new(18968.680, 4046.047, -2764.302),
+Vector3.new(21747.691, 3931.011, -2199.584),
+Vector3.new(22007.510, 5840.720, -1979.347),
+Vector3.new(22039.039, 6806.720, -1887.016),
+Vector3.new(22158.031, 7758.220, -1894.817),
+Vector3.new(22299.107, 8724.200, -1897.065),
+Vector3.new(22435.518, 9684.215, -1901.455),
+Vector3.new(22666.414, 10650.707, -1911.809),
+Vector3.new(22686.938, 10650.707, -1829.328),
+    }
+}
+
+SpawnRoutes.DROP = table.clone(SpawnRoutes.RESET)
+
+local SpeedValues = {
+    "0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9"
+}
+
+for i = 1, 100 do
+    SpeedValues[#SpeedValues + 1] = i .. "%"
+end
+
+local function slowValueToDelay(v)
+    
+    return math.clamp(10 - (v * 8), 3, 10)
+end
+
+local function percentToDelay(p)
+    return math.clamp(6 - (p / 100 * 5), 0.15, 6)
+end
+
+local function StopAuto()
+    AutoLoop = false
+    CurrentMode = nil
+end
+
+local function StartAuto(mode)
+    if AutoLoop then return end
+    AutoLoop = true
+    CurrentMode = mode
+
+    task.spawn(function()
+        while AutoLoop do
+            local char = player.Character or player.CharacterAdded:Wait()
+            local hrp = char:WaitForChild("HumanoidRootPart")
+
+            for _, pos in ipairs(SpawnRoutes[mode]) do
+                if not AutoLoop then break end
+                hrp.CFrame = CFrame.new(pos)
+                task.wait(CurrentDelay)
+            end
+
+            if not AutoLoop then break end
+
+            if mode == "RESET" then
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                if hum then hum.Health = 0 end
+            elseif mode == "DROP" then
+                local remote = ReplicatedStorage:FindFirstChild("CP_DropToStart")
+                if remote then remote:FireServer() end
+            end
+
+            player.CharacterAdded:Wait()
+            task.wait(1.5)
+        end
+    end)
+end
+
+Group:AddDropdown("AutoSpeed", {
+    Values = SpeedValues,
+    Default = 5,
+    Multi = false,
+    Text = "Teleport Speed",
+    Callback = function(Value)
+        if Value:find("%%") then
+            local p = tonumber(Value:gsub("%%",""))
+            CurrentDelay = percentToDelay(p)
+        else
+            CurrentDelay = slowValueToDelay(tonumber(Value))
+        end
+    end
+})
+
+Group:AddDropdown("AutoMode", {
+    Values = {"RESET","DROP"},
+    Default = 1,
+    Multi = false,
+    Text = "Mode",
+    Callback = function(Value)
+        SelectedMode = Value
+    end
+})
+
+Group:AddDropdown("AutoControl", {
+    Values = {"Start","Stop"},
+    Default = 1,
+    Multi = false,
+    Text = "Control",
+    Callback = function(Value)
+        if Value == "Stop" then
+            StopAuto()
+        else
+            StartAuto(SelectedMode)
+        end
+    end
+})
+
+local UIGroup = Tabs["UI Settings"]
+
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetFolder("ArchiveXNova")
+SaveManager:BuildConfigSection(Tabs["UI Settings"])
+ThemeManager:ApplyToTab(Tabs["UI Settings"])
