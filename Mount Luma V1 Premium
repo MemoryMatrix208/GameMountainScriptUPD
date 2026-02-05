@@ -1,0 +1,379 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/WhoGodsyoure/MyHome/refs/heads/main/Made%20By%20Me%20Part%201%20Open%20And%20Close"))()
+
+local window = Library:CreateWindow({
+    Title = "Mount Luma"
+})
+
+local main = window:Section("No Loop V1")
+
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local function getHRP()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart")
+end
+
+local Points = {
+Vector3.new(5.357, 5489.538, -547.434),
+Vector3.new(324.510, 5524.506, -868.060),
+Vector3.new(6.628, 5527.565, -1261.634),
+Vector3.new(-1.832, 5528.053, -1859.613),
+Vector3.new(-305.438, 5623.230, -2211.778),
+Vector3.new(0.196, 5628.844, -2468.067),
+Vector3.new(309.619, 5627.181, -2807.185),
+Vector3.new(4.809, 5634.413, -3114.947),
+Vector3.new(1.227, 5665.217, -3563.308),
+Vector3.new(-315.415, 5665.776, -3887.618),
+Vector3.new(-1.710, 5694.942, -4236.277),
+Vector3.new(311.724, 5749.490, -4559.068),
+Vector3.new(-6.166, 5740.807, -4894.870),
+Vector3.new(-5.968, 5747.449, -5385.917),
+Vector3.new(-319.567, 5877.133, -5691.818),
+Vector3.new(0.706, 5715.099, -6027.492),
+Vector3.new(6.170, 5697.340, -6637.683),
+Vector3.new(322.636, 5696.712, -6970.835),
+Vector3.new(4.305, 5697.936, -7306.646),
+Vector3.new(8.043, 5804.539, -7723.753),
+Vector3.new(318.483, 5804.463, -8045.065),
+Vector3.new(2.188, 5952.937, -8326.517),
+Vector3.new(-4.399, 5987.780, -8643.681),
+Vector3.new(-317.999, 6080.921, -8973.140),
+Vector3.new(-2.108, 6077.101, -9302.796),
+Vector3.new(317.323, 6077.070, -9616.996),
+Vector3.new(318.096, 6143.699, -10049.657),
+Vector3.new(2.356, 6240.789, -10371.443),
+Vector3.new(-9.942, 6362.785, -10782.309),
+Vector3.new(-319.172, 6364.183, -11109.005),
+Vector3.new(-331.184, 6362.884, -11722.358),
+Vector3.new(-641.643, 6424.602, -12122.472),
+Vector3.new(-330.225, 6423.619, -12447.288),
+Vector3.new(0.136, 6420.349, -12763.603),
+Vector3.new(1.298, 6556.627, -13131.170),
+Vector3.new(324.595, 6627.923, -13517.249),
+Vector3.new(320.289, 6699.786, -13986.446),
+Vector3.new(0.759, 6763.837, -14318.952),
+Vector3.new(5.901, 6764.879, -15059.447),
+Vector3.new(326.280, 6767.345, -15472.900),
+Vector3.new(-1.593, 6776.848, -15788.113),
+Vector3.new(-323.674, 6839.070, -16044.246),
+Vector3.new(-365.377, 7023.229, -16112.032),
+Vector3.new(2.001, 7109.792, -16470.996),
+Vector3.new(11.401, 7100.887, -16906.809),
+Vector3.new(318.318, 7128.063, -17251.885),
+Vector3.new(-1.392, 7128.776, -17576.748),
+Vector3.new(4.394, 7129.163, -18032.887),
+Vector3.new(-4.758, 7207.628, -18387.836),
+Vector3.new(2.611, 7207.403, -18936.588),
+Vector3.new(0.100, 7451.732, -19070.092),
+}
+
+local Running = false
+local Looping = false
+local SelectedMode = "Tween"
+local SelectedSpeed = "Normal"
+
+local SpeedMap = {
+    ["Ultra Slow"]     = 8,
+    ["Glacial"]        = 7,
+    ["Snail Pace"]     = 6,
+    ["Very Slow"]      = 5,
+    ["Slow"]           = 4,
+    ["Normal"]         = 3,
+    ["Moderate"]       = 2.5,
+    ["Steady"]         = 2.2,
+    ["Brisk"]          = 2.0,
+    ["Fast"]           = 1.7,
+    ["Quick"]          = 1.4,
+    ["Very Fast"]      = 1.1,
+    ["Super Fast"]     = 0.9,
+    ["Ultra Fast"]     = 0.7,
+    ["Hyper Speed"]    = 0.5,
+    ["Lightning Fast"] = 0.25,
+    ["Warp Speed"]     = 0.1,
+    ["Instant"]        = 0
+}
+
+local SpeedValues = {
+    "Ultra Slow","Glacial","Snail Pace","Very Slow","Slow",
+    "Normal",
+    "Moderate","Steady","Brisk","Fast","Quick","Very Fast",
+    "Super Fast","Ultra Fast","Hyper Speed","Lightning Fast",
+    "Warp Speed","Instant"
+}
+
+main:Dropdown("Speed", SpeedValues, "Normal", function(v)
+    SelectedSpeed = v
+end)
+
+main:Dropdown("Mode", {"Tween", "Teleport"}, "Tween", function(v)
+    SelectedMode = v
+end)
+
+main:Dropdown("Control", {"Once", "Loop", "Stop"}, "Once", function(v)
+    if v == "Stop" then
+        Running = false
+        Looping = false
+        return
+    end
+
+    if Running then return end
+    Running = true
+    Looping = (v == "Loop")
+
+    task.spawn(function()
+        local hrp = getHRP()
+
+        repeat
+            for _, pos in ipairs(Points) do
+                if not Running then break end
+
+                local delayTime = SpeedMap[SelectedSpeed] or 3
+
+                if SelectedMode == "Tween" then
+                    local tween = TweenService:Create(
+                        hrp,
+                        TweenInfo.new(
+                            delayTime,
+                            Enum.EasingStyle.Sine,
+                            Enum.EasingDirection.InOut
+                        ),
+                        { CFrame = CFrame.new(pos) }
+                    )
+                    tween:Play()
+                    tween.Completed:Wait()
+                else
+                    hrp.CFrame = CFrame.new(pos)
+                    if delayTime > 0 then
+                        task.wait(delayTime)
+                    else
+                        task.wait()
+                    end
+                end
+            end
+        until not Looping or not Running
+
+        Running = false
+    end)
+end)
+
+local main = window:Section("Loop V1")
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+local DropEvent = ReplicatedStorage:WaitForChild("CP_DropToStart")
+
+local AutoLoop = false
+local CurrentDelay = 4
+local SelectedSpeed = "Normal"
+
+local SpawnRoutes = {
+    DROP = {
+Vector3.new(5.357, 5489.538, -547.434),
+Vector3.new(324.510, 5524.506, -868.060),
+Vector3.new(6.628, 5527.565, -1261.634),
+Vector3.new(-1.832, 5528.053, -1859.613),
+Vector3.new(-305.438, 5623.230, -2211.778),
+Vector3.new(0.196, 5628.844, -2468.067),
+Vector3.new(309.619, 5627.181, -2807.185),
+Vector3.new(4.809, 5634.413, -3114.947),
+Vector3.new(1.227, 5665.217, -3563.308),
+Vector3.new(-315.415, 5665.776, -3887.618),
+Vector3.new(-1.710, 5694.942, -4236.277),
+Vector3.new(311.724, 5749.490, -4559.068),
+Vector3.new(-6.166, 5740.807, -4894.870),
+Vector3.new(-5.968, 5747.449, -5385.917),
+Vector3.new(-319.567, 5877.133, -5691.818),
+Vector3.new(0.706, 5715.099, -6027.492),
+Vector3.new(6.170, 5697.340, -6637.683),
+Vector3.new(322.636, 5696.712, -6970.835),
+Vector3.new(4.305, 5697.936, -7306.646),
+Vector3.new(8.043, 5804.539, -7723.753),
+Vector3.new(318.483, 5804.463, -8045.065),
+Vector3.new(2.188, 5952.937, -8326.517),
+Vector3.new(-4.399, 5987.780, -8643.681),
+Vector3.new(-317.999, 6080.921, -8973.140),
+Vector3.new(-2.108, 6077.101, -9302.796),
+Vector3.new(317.323, 6077.070, -9616.996),
+Vector3.new(318.096, 6143.699, -10049.657),
+Vector3.new(2.356, 6240.789, -10371.443),
+Vector3.new(-9.942, 6362.785, -10782.309),
+Vector3.new(-319.172, 6364.183, -11109.005),
+Vector3.new(-331.184, 6362.884, -11722.358),
+Vector3.new(-641.643, 6424.602, -12122.472),
+Vector3.new(-330.225, 6423.619, -12447.288),
+Vector3.new(0.136, 6420.349, -12763.603),
+Vector3.new(1.298, 6556.627, -13131.170),
+Vector3.new(324.595, 6627.923, -13517.249),
+Vector3.new(320.289, 6699.786, -13986.446),
+Vector3.new(0.759, 6763.837, -14318.952),
+Vector3.new(5.901, 6764.879, -15059.447),
+Vector3.new(326.280, 6767.345, -15472.900),
+Vector3.new(-1.593, 6776.848, -15788.113),
+Vector3.new(-323.674, 6839.070, -16044.246),
+Vector3.new(-365.377, 7023.229, -16112.032),
+Vector3.new(2.001, 7109.792, -16470.996),
+Vector3.new(11.401, 7100.887, -16906.809),
+Vector3.new(318.318, 7128.063, -17251.885),
+Vector3.new(-1.392, 7128.776, -17576.748),
+Vector3.new(4.394, 7129.163, -18032.887),
+Vector3.new(-4.758, 7207.628, -18387.836),
+Vector3.new(2.611, 7207.403, -18936.588),
+Vector3.new(0.100, 7451.732, -19070.092),
+    }
+}
+
+local SpeedMap = {
+    ["Ultra Slow"] = 9,
+    ["Glacial"] = 8,
+    ["Snail Pace"] = 7,
+    ["Very Slow"] = 6,
+    ["Slow"] = 5,
+    ["Normal"] = 4,
+    ["Moderate"] = 3,
+    ["Steady"] = 2.5,
+    ["Brisk"] = 2,
+    ["Fast"] = 1.6,
+    ["Quick"] = 1.3,
+    ["Very Fast"] = 1,
+    ["Super Fast"] = 0.8,
+    ["Ultra Fast"] = 0.6,
+    ["Hyper Speed"] = 0.4,
+    ["Lightning Fast"] = 0.2,
+    ["Warp Speed"] = 0.1,
+    ["Instant"] = 0
+}
+
+local SpeedValues = {}
+for k in pairs(SpeedMap) do
+    table.insert(SpeedValues, k)
+end
+table.sort(SpeedValues)
+
+local function StopAuto()
+    AutoLoop = false
+end
+
+local function StartAuto()
+    if AutoLoop then return end
+    AutoLoop = true
+
+    task.spawn(function()
+        while AutoLoop do
+            local char = player.Character or player.CharacterAdded:Wait()
+            local hrp = char:WaitForChild("HumanoidRootPart")
+
+            for _, pos in ipairs(SpawnRoutes.DROP) do
+                if not AutoLoop then return end
+                hrp.CFrame = CFrame.new(pos)
+                task.wait(CurrentDelay)
+            end
+
+            
+            DropEvent:FireServer()
+
+            player.CharacterAdded:Wait()
+            task.wait(1.5)
+        end
+    end)
+end
+
+main:Dropdown(
+    "Teleport Speed",
+    SpeedValues,
+    "Normal",
+    function(value)
+        SelectedSpeed = value
+        CurrentDelay = SpeedMap[value] or 4
+    end
+)
+
+main:Dropdown(
+    "Control",
+    {"Start", "Stop"},
+    "Start",
+    function(value)
+        if value == "Start" then
+            StartAuto()
+        else
+            StopAuto()
+        end
+    end
+)
+
+local main = window:Section("CheckPoints")
+
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+
+local Points = {
+Vector3.new(5.357, 5489.538, -547.434),
+Vector3.new(324.510, 5524.506, -868.060),
+Vector3.new(6.628, 5527.565, -1261.634),
+Vector3.new(-1.832, 5528.053, -1859.613),
+Vector3.new(-305.438, 5623.230, -2211.778),
+Vector3.new(0.196, 5628.844, -2468.067),
+Vector3.new(309.619, 5627.181, -2807.185),
+Vector3.new(4.809, 5634.413, -3114.947),
+Vector3.new(1.227, 5665.217, -3563.308),
+Vector3.new(-315.415, 5665.776, -3887.618),
+Vector3.new(-1.710, 5694.942, -4236.277),
+Vector3.new(311.724, 5749.490, -4559.068),
+Vector3.new(-6.166, 5740.807, -4894.870),
+Vector3.new(-5.968, 5747.449, -5385.917),
+Vector3.new(-319.567, 5877.133, -5691.818),
+Vector3.new(0.706, 5715.099, -6027.492),
+Vector3.new(6.170, 5697.340, -6637.683),
+Vector3.new(322.636, 5696.712, -6970.835),
+Vector3.new(4.305, 5697.936, -7306.646),
+Vector3.new(8.043, 5804.539, -7723.753),
+Vector3.new(318.483, 5804.463, -8045.065),
+Vector3.new(2.188, 5952.937, -8326.517),
+Vector3.new(-4.399, 5987.780, -8643.681),
+Vector3.new(-317.999, 6080.921, -8973.140),
+Vector3.new(-2.108, 6077.101, -9302.796),
+Vector3.new(317.323, 6077.070, -9616.996),
+Vector3.new(318.096, 6143.699, -10049.657),
+Vector3.new(2.356, 6240.789, -10371.443),
+Vector3.new(-9.942, 6362.785, -10782.309),
+Vector3.new(-319.172, 6364.183, -11109.005),
+Vector3.new(-331.184, 6362.884, -11722.358),
+Vector3.new(-641.643, 6424.602, -12122.472),
+Vector3.new(-330.225, 6423.619, -12447.288),
+Vector3.new(0.136, 6420.349, -12763.603),
+Vector3.new(1.298, 6556.627, -13131.170),
+Vector3.new(324.595, 6627.923, -13517.249),
+Vector3.new(320.289, 6699.786, -13986.446),
+Vector3.new(0.759, 6763.837, -14318.952),
+Vector3.new(5.901, 6764.879, -15059.447),
+Vector3.new(326.280, 6767.345, -15472.900),
+Vector3.new(-1.593, 6776.848, -15788.113),
+Vector3.new(-323.674, 6839.070, -16044.246),
+Vector3.new(-365.377, 7023.229, -16112.032),
+Vector3.new(2.001, 7109.792, -16470.996),
+Vector3.new(11.401, 7100.887, -16906.809),
+Vector3.new(318.318, 7128.063, -17251.885),
+Vector3.new(-1.392, 7128.776, -17576.748),
+Vector3.new(4.394, 7129.163, -18032.887),
+Vector3.new(-4.758, 7207.628, -18387.836),
+Vector3.new(2.611, 7207.403, -18936.588),
+Vector3.new(0.100, 7451.732, -19070.092),
+}
+
+local Names = {}
+for i = 1, #Points do
+    Names[i] = "Point " .. i
+end
+
+main:Dropdown("CheckPoints", Names, Names[1], function(selected)
+    local index = tonumber(selected:match("%d+"))
+    if not index then return end
+
+    local char = Player.Character or Player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    hrp.CFrame = CFrame.new(Points[index])
+end)
