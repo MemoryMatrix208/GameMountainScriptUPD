@@ -1,0 +1,289 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/WhoGodsyoure/MyHome/refs/heads/main/Made%20By%20Me%20Part%201%20Open%20And%20Close"))()
+
+local window = Library:CreateWindow({
+    Title = "Rapuk"
+})
+
+local main = window:Section("No Loop V1")
+
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local function getHRP()
+    local char = player.Character or player.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart")
+end
+
+local Points = {
+Vector3.new(806.789, 163.558, -290.519),
+Vector3.new(817.791, 161.916, 500.539),
+Vector3.new(926.316, 158.239, 1360.953),
+Vector3.new(1896.609, 160.115, 1345.564),
+Vector3.new(2282.352, 336.998, 1361.901),
+Vector3.new(3166.958, 336.998, 1348.717),
+Vector3.new(3817.953, 364.998, 1035.862),
+Vector3.new(4777.771, 364.998, 1041.361),
+Vector3.new(6151.345, 364.998, 1015.454),
+Vector3.new(7456.245, 428.998, 1015.351),
+Vector3.new(8240.518, 612.998, 1011.499),
+Vector3.new(9167.103, 816.998, 992.535),
+Vector3.new(10141.162, 860.998, 998.427),
+Vector3.new(11048.240, 904.998, 980.045),
+Vector3.new(11644.655, 1165.088, 958.340),
+Vector3.new(12591.636, 1161.106, 969.010),
+Vector3.new(13288.148, 1161.040, 937.862),
+Vector3.new(13543.368, 1382.629, 608.115),
+Vector3.new(14695.967, 1381.080, 175.582),
+Vector3.new(15735.951, 1397.069, -333.570),
+Vector3.new(16126.304, 1617.752, -1132.229),
+}
+
+local Running = false
+local Looping = false
+local SelectedMode = "Tween"
+local SelectedSpeed = "Normal"
+
+local SpeedMap = {
+    ["Ultra Slow"]     = 8,
+    ["Glacial"]        = 7,
+    ["Snail Pace"]     = 6,
+    ["Very Slow"]      = 5,
+    ["Slow"]           = 4,
+    ["Normal"]         = 3,
+    ["Moderate"]       = 2.5,
+    ["Steady"]         = 2.2,
+    ["Brisk"]          = 2.0,
+    ["Fast"]           = 1.7,
+    ["Quick"]          = 1.4,
+    ["Very Fast"]      = 1.1,
+    ["Super Fast"]     = 0.9,
+    ["Ultra Fast"]     = 0.7,
+    ["Hyper Speed"]    = 0.5,
+    ["Lightning Fast"] = 0.25,
+    ["Warp Speed"]     = 0.1,
+    ["Instant"]        = 0
+}
+
+local SpeedValues = {
+    "Ultra Slow","Glacial","Snail Pace","Very Slow","Slow",
+    "Normal",
+    "Moderate","Steady","Brisk","Fast","Quick","Very Fast",
+    "Super Fast","Ultra Fast","Hyper Speed","Lightning Fast",
+    "Warp Speed","Instant"
+}
+
+main:Dropdown("Speed", SpeedValues, "Normal", function(v)
+    SelectedSpeed = v
+end)
+
+main:Dropdown("Mode", {"Tween", "Teleport"}, "Tween", function(v)
+    SelectedMode = v
+end)
+
+main:Dropdown("Control", {"Once", "Loop", "Stop"}, "Once", function(v)
+    if v == "Stop" then
+        Running = false
+        Looping = false
+        return
+    end
+
+    if Running then return end
+    Running = true
+    Looping = (v == "Loop")
+
+    task.spawn(function()
+        local hrp = getHRP()
+
+        repeat
+            for _, pos in ipairs(Points) do
+                if not Running then break end
+
+                local delayTime = SpeedMap[SelectedSpeed] or 3
+
+                if SelectedMode == "Tween" then
+                    local tween = TweenService:Create(
+                        hrp,
+                        TweenInfo.new(
+                            delayTime,
+                            Enum.EasingStyle.Sine,
+                            Enum.EasingDirection.InOut
+                        ),
+                        { CFrame = CFrame.new(pos) }
+                    )
+                    tween:Play()
+                    tween.Completed:Wait()
+                else
+                    hrp.CFrame = CFrame.new(pos)
+                    if delayTime > 0 then
+                        task.wait(delayTime)
+                    else
+                        task.wait()
+                    end
+                end
+            end
+        until not Looping or not Running
+
+        Running = false
+    end)
+end)
+
+local main = window:Section("Loop V1")
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+local DropEvent = ReplicatedStorage:WaitForChild("CP_DropToStart")
+
+local AutoLoop = false
+local CurrentDelay = 4
+local SelectedSpeed = "Normal"
+
+local SpawnRoutes = {
+    DROP = {
+Vector3.new(806.789, 163.558, -290.519),
+Vector3.new(817.791, 161.916, 500.539),
+Vector3.new(926.316, 158.239, 1360.953),
+Vector3.new(1896.609, 160.115, 1345.564),
+Vector3.new(2282.352, 336.998, 1361.901),
+Vector3.new(3166.958, 336.998, 1348.717),
+Vector3.new(3817.953, 364.998, 1035.862),
+Vector3.new(4777.771, 364.998, 1041.361),
+Vector3.new(6151.345, 364.998, 1015.454),
+Vector3.new(7456.245, 428.998, 1015.351),
+Vector3.new(8240.518, 612.998, 1011.499),
+Vector3.new(9167.103, 816.998, 992.535),
+Vector3.new(10141.162, 860.998, 998.427),
+Vector3.new(11048.240, 904.998, 980.045),
+Vector3.new(11644.655, 1165.088, 958.340),
+Vector3.new(12591.636, 1161.106, 969.010),
+Vector3.new(13288.148, 1161.040, 937.862),
+Vector3.new(13543.368, 1382.629, 608.115),
+Vector3.new(14695.967, 1381.080, 175.582),
+Vector3.new(15735.951, 1397.069, -333.570),
+Vector3.new(16126.304, 1617.752, -1132.229),
+    }
+}
+
+local SpeedMap = {
+    ["Ultra Slow"] = 9,
+    ["Glacial"] = 8,
+    ["Snail Pace"] = 7,
+    ["Very Slow"] = 6,
+    ["Slow"] = 5,
+    ["Normal"] = 4,
+    ["Moderate"] = 3,
+    ["Steady"] = 2.5,
+    ["Brisk"] = 2,
+    ["Fast"] = 1.6,
+    ["Quick"] = 1.3,
+    ["Very Fast"] = 1,
+    ["Super Fast"] = 0.8,
+    ["Ultra Fast"] = 0.6,
+    ["Hyper Speed"] = 0.4,
+    ["Lightning Fast"] = 0.2,
+    ["Warp Speed"] = 0.1,
+    ["Instant"] = 0
+}
+
+local SpeedValues = {}
+for k in pairs(SpeedMap) do
+    table.insert(SpeedValues, k)
+end
+table.sort(SpeedValues)
+
+local function StopAuto()
+    AutoLoop = false
+end
+
+local function StartAuto()
+    if AutoLoop then return end
+    AutoLoop = true
+
+    task.spawn(function()
+        while AutoLoop do
+            local char = player.Character or player.CharacterAdded:Wait()
+            local hrp = char:WaitForChild("HumanoidRootPart")
+
+            for _, pos in ipairs(SpawnRoutes.DROP) do
+                if not AutoLoop then return end
+                hrp.CFrame = CFrame.new(pos)
+                task.wait(CurrentDelay)
+            end
+
+            
+            DropEvent:FireServer()
+
+            player.CharacterAdded:Wait()
+            task.wait(1.5)
+        end
+    end)
+end
+
+main:Dropdown(
+    "Teleport Speed",
+    SpeedValues,
+    "Normal",
+    function(value)
+        SelectedSpeed = value
+        CurrentDelay = SpeedMap[value] or 4
+    end
+)
+
+main:Dropdown(
+    "Control",
+    {"Start", "Stop"},
+    "Start",
+    function(value)
+        if value == "Start" then
+            StartAuto()
+        else
+            StopAuto()
+        end
+    end
+)
+
+local main = window:Section("CheckPoints")
+
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+
+local Points = {
+Vector3.new(806.789, 163.558, -290.519),
+Vector3.new(817.791, 161.916, 500.539),
+Vector3.new(926.316, 158.239, 1360.953),
+Vector3.new(1896.609, 160.115, 1345.564),
+Vector3.new(2282.352, 336.998, 1361.901),
+Vector3.new(3166.958, 336.998, 1348.717),
+Vector3.new(3817.953, 364.998, 1035.862),
+Vector3.new(4777.771, 364.998, 1041.361),
+Vector3.new(6151.345, 364.998, 1015.454),
+Vector3.new(7456.245, 428.998, 1015.351),
+Vector3.new(8240.518, 612.998, 1011.499),
+Vector3.new(9167.103, 816.998, 992.535),
+Vector3.new(10141.162, 860.998, 998.427),
+Vector3.new(11048.240, 904.998, 980.045),
+Vector3.new(11644.655, 1165.088, 958.340),
+Vector3.new(12591.636, 1161.106, 969.010),
+Vector3.new(13288.148, 1161.040, 937.862),
+Vector3.new(13543.368, 1382.629, 608.115),
+Vector3.new(14695.967, 1381.080, 175.582),
+Vector3.new(15735.951, 1397.069, -333.570),
+Vector3.new(16126.304, 1617.752, -1132.229),
+}
+
+local Names = {}
+for i = 1, #Points do
+    Names[i] = "Point " .. i
+end
+
+main:Dropdown("CheckPoints", Names, Names[1], function(selected)
+    local index = tonumber(selected:match("%d+"))
+    if not index then return end
+
+    local char = Player.Character or Player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    hrp.CFrame = CFrame.new(Points[index])
+end)
